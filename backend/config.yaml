@@ -1,0 +1,49 @@
+# Terrain Hazard Screening Platform - Geoprocessing Configuration
+# All weights, thresholds, stream parameters, and observation sources are defined here.
+# Strictly adheres to scientific guardrails: no hardcoded magic constants.
+
+system:
+  app_name: "Terrain Hazard Screening Platform"
+  version: "1.0.0"
+  storage_dir: "data"
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+    - "http://127.0.0.1:5173"
+
+# Multi-criteria terrain predisposition weights (sum normalized to 1.0)
+susceptibility_weights:
+  relative_elevation: 0.35      # Morphological lowlands / depression predisposition
+  slope_flatness: 0.30          # Flat terrain (< 3 deg) limiting drainage velocity
+  curvature_concavity: 0.20     # Plan/profile concavities converging overland runoff
+  topographic_wetness: 0.15     # Steady-state moisture index proxy ln(a / tan beta)
+
+# Thresholds for categorizing terrain flood susceptibility
+susceptibility_thresholds:
+  very_high: 0.70
+  high: 0.50
+  moderate: 0.30
+  low: 0.00
+
+# Hydrological terrain extraction parameters
+hydrology:
+  pit_fill_epsilon_m: 0.01          # Minimum gradient enforced in flat sink resolution
+  flow_accumulation_threshold: 100  # Number of upslope cells to initiate a stream channel
+  slope_flatness_cutoff_deg: 3.0    # Slope below which terrain is classified as flat
+  slope_steep_cutoff_deg: 35.0      # Slope above which ponding predisposition drops to 0
+
+# SAR Observation Validation Configuration (Sentinel-1 and NISAR L-band)
+# Note: NISAR does NOT provide DEMs. NISAR L-band is used exclusively for flood extent observation.
+sar_validation:
+  asf_daac_base_url: "https://datapool.asf.alaska.edu"  # Official ASF DAAC distribution endpoint
+  sentinel1_db_threshold: -16.0                         # Gamma0 cross-polarization (VH) threshold for open water detection
+  nisar_lband_db_threshold: -18.0                       # L-band backscatter threshold for inundation under vegetation
+  min_water_cluster_pixels: 5                           # Minimum contiguous water cluster filter to remove radar speckle
+
+# Rainfall-Aware Advisory Parameters (Non-official screening)
+advisory:
+  official_disclaimer: "Advisory: terrain-based screening. Not an official warning. Consult IMD, CWC, NDMA or your State Disaster Management Authority."
+  rainfall_anomaly_thresholds_mm:
+    heavy: 64.5     # IMD standard heavy rainfall criteria (64.5 - 115.5 mm/day)
+    very_heavy: 115.6
+    extremely_heavy: 204.5

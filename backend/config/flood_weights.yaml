@@ -1,0 +1,35 @@
+# Default Configuration for Flood Susceptibility Modeler
+# NOTE: These weights are purely ILLUSTRATIVE placeholders meant for software testing and demonstration.
+# They MUST be calibrated and validated against historical event data for the specific region of interest before operational use.
+# Do NOT claim these are scientifically derived or universally applicable.
+
+factors:
+  hand:
+    weight: 0.25
+    direction: "inverse" # lower HAND = more susceptible
+    description: "Height Above Nearest Drainage"
+  log_flow_accumulation:
+    weight: 0.20
+    direction: "direct"  # higher log flow accumulation = more susceptible
+    description: "Logarithmic Flow Accumulation"
+  twi:
+    weight: 0.15
+    direction: "direct"  # higher TWI = more susceptible
+    description: "Topographic Wetness Index"
+  distance_to_stream:
+    weight: 0.20
+    direction: "inverse" # lower distance to stream = more susceptible
+    description: "Distance to Nearest Stream"
+  slope:
+    weight: 0.20
+    direction: "inverse" # lower slope = more susceptible
+    description: "Terrain Slope"
+
+classification:
+  method: "quantile" # options: "quantile", "fixed"
+  thresholds:
+    # Used only if method is "fixed". Values represent boundaries for the normalized score (0-1).
+    low: 0.25
+    moderate: 0.50
+    high: 0.75
+    # > 0.75 is very high

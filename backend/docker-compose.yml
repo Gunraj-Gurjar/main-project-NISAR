@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: terrain_screening_db
+    environment:
+      POSTGRES_DB: terrain_db
+      POSTGRES_USER: terrain_user
+      POSTGRES_PASSWORD: terrain_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U terrain_user -d terrain_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - terrain_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: terrain_screening_backend
+    environment:
+      DATABASE_URL: postgresql://terrain_user:terrain_secure_password@db:5432/terrain_db
+      STORAGE_DIR: /data
+      CONFIG_FILE: /app/config.yaml
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - local_data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - terrain_network
+
+volumes:
+  pgdata:
+  local_data:
+
+networks:
+  terrain_network:
+    driver: bridge
