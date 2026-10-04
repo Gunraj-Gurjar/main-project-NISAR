@@ -169,123 +169,80 @@ const TerrainViewer = ({ elevationData, onBack }: TerrainViewerProps) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="relative z-10 min-h-screen flex flex-col"
+      transition={{ duration: 0.3 }}
+      className="w-full h-full min-h-0 flex flex-col relative overflow-hidden bg-slate-950 text-foreground"
     >
-      {/* Top bar */}
-      <div className="flex items-center justify-between p-4 border-b border-border/50">
+      {/* 3D Top Floating Action Bar */}
+      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
         <button
-          onClick={onBack}
-          className="glass-card px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:neon-glow-blue transition-all"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          Back
-        </button>
-        <h2 className="text-lg font-semibold gradient-text hidden sm:block">Terrain Hazard Screening & Factor Explorer</h2>
-        <button
+          type="button"
           onClick={handleDownload}
-          className="glass-card px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:neon-glow-purple transition-all"
+          className="bg-card/90 backdrop-blur px-3 py-1.5 rounded-lg border border-border text-xs font-medium flex items-center gap-1.5 hover:bg-card transition-all shadow-md"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          Export PNG
+          <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>Export 3D PNG</span>
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row">
-        {/* Left Stats Panel - Improvised */}
-        <motion.aside
-          initial={{ x: -40, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="w-full lg:w-72 p-4 border-b lg:border-b-0 lg:border-r border-border/50"
-        >
-          <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border-white/5 hover:border-white/10 transition-colors shadow-2xl">
-            {/* Background glowing effect */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue via-neon-purple to-neon-cyan opacity-70"></div>
-            <div className="absolute -inset-24 bg-gradient-to-br from-neon-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl z-0 pointer-events-none"></div>
-
-            <div className="relative z-10">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                <svg className="w-4 h-4 text-neon-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                Terrain Stats
-              </h3>
-              
-              <div className="space-y-5">
-                <div className="bg-background/40 backdrop-blur-md rounded-xl p-3 border border-white/5 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Grid Size</span>
-                    <span className="text-sm font-semibold text-foreground mt-0.5">{processedData.length} × {processedData[0]?.length}</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-neon-cyan/10 flex items-center justify-center text-neon-cyan">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-background/40 backdrop-blur-md rounded-xl p-3 border border-white/5 flex flex-col justify-center items-center text-center">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Min Elev</span>
-                    <span className="text-lg font-bold text-neon-green">{minElev.toFixed(0)}<span className="text-xs text-muted-foreground ml-0.5">m</span></span>
-                  </div>
-                  <div className="bg-background/40 backdrop-blur-md rounded-xl p-3 border border-white/5 flex flex-col justify-center items-center text-center">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Max Elev</span>
-                    <span className="text-lg font-bold text-neon-purple">{maxElev.toFixed(0)}<span className="text-xs text-muted-foreground ml-0.5">m</span></span>
-                  </div>
-                </div>
-
-                <div className="bg-background/40 backdrop-blur-md rounded-xl p-3 border border-white/5 space-y-2">
-                  <div className="flex justify-between items-end">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Mean Elevation</span>
-                    <span className="text-sm font-bold text-neon-cyan">{analysis.metrics.meanElevation.toFixed(0)}m</span>
-                  </div>
-                  <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-neon-cyan h-full rounded-full" style={{ width: `${(analysis.metrics.meanElevation - minElev) / (maxElev - minElev) * 100}%` }}></div>
-                  </div>
-                </div>
-                
-                <div className="bg-background/40 backdrop-blur-md rounded-xl p-3 border border-white/5 flex justify-between items-center">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Deviation</span>
-                  <span className="text-xs font-mono font-medium text-foreground/80 bg-black/30 px-2 py-1 rounded-md border border-white/5">± {analysis.metrics.stdElevation.toFixed(0)}m</span>
-                </div>
-              </div>
+      {/* Main 3D Canvas Container */}
+      <div className="w-full h-full flex-1 relative min-h-0 overflow-hidden flex items-center justify-center">
+        {/* Floating Left Terrain Stats Box */}
+        <div className="absolute top-3 left-3 z-10 bg-card/85 backdrop-blur-md p-3 rounded-xl border border-border/70 shadow-lg max-w-[200px] text-xs pointer-events-auto">
+          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+            <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Terrain Mesh Stats</span>
+          </div>
+          <div className="space-y-1.5 font-numeric tabular-nums text-[11px]">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Grid:</span>
+              <span className="font-semibold">{processedData.length} × {processedData[0]?.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Min Elev:</span>
+              <span className="font-semibold text-emerald-400">{minElev.toFixed(0)}m</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Max Elev:</span>
+              <span className="font-semibold text-purple-400">{maxElev.toFixed(0)}m</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Mean Elev:</span>
+              <span className="font-semibold text-cyan-400">{analysis.metrics.meanElevation.toFixed(0)}m</span>
             </div>
           </div>
-        </motion.aside>
-
-        {/* 3D Plot */}
-        <div className="flex-1 relative">
-          <Plot
-            ref={plotRef}
-            data={plotData}
-            layout={{
-              autosize: true,
-              margin: { l: 0, r: 0, t: 0, b: 0 },
-              paper_bgcolor: "rgba(0,0,0,0)",
-              scene: {
-                bgcolor: "rgba(0,0,0,0)",
-                xaxis: { showgrid: false, showticklabels: false, title: "", zeroline: false, showline: false },
-                yaxis: { showgrid: false, showticklabels: false, title: "", zeroline: false, showline: false },
-                zaxis: {
-                  showgrid: true, gridcolor: "rgba(59,130,246,0.1)",
-                  showticklabels: true, title: "",
-                  tickfont: { color: "rgba(148,163,184,0.6)", size: 10 },
-                },
-                camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
-                aspectratio: { x: 1, y: 1, z: 0.5 },
-              },
-            }}
-            config={{ displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ["toImage", "sendDataToCloud"] }}
-            style={{ width: "100%", height: "100%" }}
-            useResizeHandler
-          />
         </div>
 
-        {/* Right Analysis Panel */}
-        <AnalysisPanel
-          analysis={analysis}
-          overlay={overlay}
-          onOverlayChange={setOverlay}
-          showContours={showContours}
-          onContoursChange={setShowContours}
+        {/* Plotly 3D Surface */}
+        <Plot
+          ref={plotRef}
+          data={plotData}
+          layout={{
+            autosize: true,
+            margin: { l: 0, r: 0, t: 0, b: 0 },
+            paper_bgcolor: "rgba(0,0,0,0)",
+            plot_bgcolor: "rgba(0,0,0,0)",
+            scene: {
+              bgcolor: "rgba(15, 23, 42, 0.5)",
+              xaxis: { showgrid: false, showticklabels: false, title: "", zeroline: false, showline: false },
+              yaxis: { showgrid: false, showticklabels: false, title: "", zeroline: false, showline: false },
+              zaxis: {
+                showgrid: true,
+                gridcolor: "rgba(59,130,246,0.15)",
+                showticklabels: true,
+                title: "",
+                tickfont: { color: "rgba(148,163,184,0.8)", size: 9 },
+              },
+              camera: { eye: { x: 1.3, y: 1.3, z: 0.8 } },
+              aspectratio: { x: 1, y: 1, z: 0.35 },
+            },
+          }}
+          config={{ displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ["toImage", "sendDataToCloud"] }}
+          style={{ width: "100%", height: "100%" }}
+          useResizeHandler
         />
       </div>
     </motion.div>
@@ -293,3 +250,4 @@ const TerrainViewer = ({ elevationData, onBack }: TerrainViewerProps) => {
 };
 
 export default TerrainViewer;
+

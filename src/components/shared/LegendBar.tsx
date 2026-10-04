@@ -88,7 +88,7 @@ export const LegendBar: React.FC<LegendBarProps> = ({
       </div>
 
       {/* Grid of legend items */}
-      <div className={cn("grid gap-2", compact ? "grid-cols-2 md:grid-cols-4 text-xs" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4")}>
+      <div className={cn("grid gap-1.5", compact ? "grid-cols-2 sm:grid-cols-4 text-xs" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4")}>
         {SUSCEPTIBILITY_ZONES.map((zone) => {
           const isSelected = activeZone === zone.label;
           const pct = percentages ? percentages[zone.label] : undefined;
@@ -100,19 +100,19 @@ export const LegendBar: React.FC<LegendBarProps> = ({
               onClick={() => onZoneClick?.(zone.label)}
               aria-pressed={isSelected}
               className={cn(
-                "flex flex-col p-2 rounded-lg border text-left transition-all focus-visible:ring-2 focus-visible:ring-ring",
+                "flex flex-col p-1.5 rounded-md border text-left transition-all focus-visible:ring-2 focus-visible:ring-ring",
                 getZoneStyle(zone.label),
                 isSelected ? "ring-2 ring-primary scale-[1.02]" : "hover:opacity-90",
                 !onZoneClick && "cursor-default"
               )}
             >
-              <div className="flex items-center justify-between font-semibold">
+              <div className="flex items-center justify-between font-bold text-xs leading-tight">
                 <span>{zone.label}</span>
                 {pct !== undefined && (
-                  <span className="font-numeric tabular-nums font-bold text-xs">{pct.toFixed(1)}%</span>
+                  <span className="font-numeric tabular-nums font-bold text-[11px]">{pct.toFixed(1)}%</span>
                 )}
               </div>
-              <div className="text-[10px] opacity-80 font-numeric tabular-nums mt-0.5">
+              <div className="text-[9px] opacity-80 font-numeric tabular-nums mt-0.5 whitespace-nowrap">
                 Score: {zone.range}
               </div>
               {!compact && (
