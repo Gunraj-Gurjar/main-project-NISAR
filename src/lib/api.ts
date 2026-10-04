@@ -82,6 +82,7 @@ export interface SummaryResponse {
 
 export const submitJob = async (file: File, config?: any): Promise<JobCreateResponse> => {
   const formData = new FormData();
+  formData.append("dem", file);
   formData.append("file", file);
   if (config) {
     formData.append("config", JSON.stringify(config));

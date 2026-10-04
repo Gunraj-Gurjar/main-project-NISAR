@@ -7,15 +7,27 @@ export async function processGeoTiff(file: File): Promise<number[][]> {
   const data = await image.readRasters();
   const width = image.getWidth();
   const height = image.getHeight();
-  const raster = data[0] as Float32Array | Float64Array | Int16Array | Uint16Array;
+  const raster = (data[0] || data) as any;
 
-  // Convert to 2D array and clean invalid values
+  let gdalNoData: number | null = null;
+  try {
+    const rawNoData = (image as any).getGDALNoData?.();
+    if (rawNoData !== undefined && rawNoData !== null) {
+      gdalNoData = Number(rawNoData);
+    }
+  } catch {
+    gdalNoData = null;
+  }
+
+  // Convert to 2D array and clean invalid/nodata values
   const grid: number[][] = [];
   for (let i = 0; i < height; i++) {
     const row: number[] = [];
     for (let j = 0; j < width; j++) {
-      let val = raster[i * width + j];
-      if (!isFinite(val) || val < -500 || val > 9000) val = 0;
+      let val = Number(raster[i * width + j]);
+      if (!isFinite(val) || (gdalNoData !== null && Math.abs(val - gdalNoData) < 1e-3) || val < -1000 || val > 12000) {
+        val = 0;
+      }
       row.push(val);
     }
     grid.push(row);

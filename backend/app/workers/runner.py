@@ -1,66 +1,39 @@
-import json
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Optional
-
-from app.core.config import settings
+from sqlalchemy.orm import Session
+from app.models.job import Job
 from app.core.database import SessionLocal
-from app.models.db import JobModel
-from app.models.schemas import AnalysisConfig, DemMetadata, JobStatus
-from app.services.terrain.pipeline import run_terrain_pipeline
-from app.storage import storage
+from app.services.dem_inspect import inspect_dem
+from app.storage.local import compute_hash
+import os
+from app.core.config import settings
 
-
-def run_screening_task(
-    job_id: str,
-    raw_dem_path: str,
-    metadata_dict: dict,
-    config_dict: Optional[dict] = None,
-):
-    """
-    Background job execution runner (FastAPI BackgroundTasks — no Redis/RQ).
-    Runs terrain analysis pipeline and persists outputs under jobs/{job_id}/.
-    """
+def run_job(job_id: str):
     db = SessionLocal()
-    job = db.query(JobModel).filter(JobModel.id == job_id).first()
+    job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         db.close()
         return
 
     try:
-        job.status = JobStatus.RUNNING.value
-        job.progress = 0.1
+        job.status = "running"
         db.commit()
-
-        metadata = DemMetadata(**metadata_dict)
-        config = AnalysisConfig(**config_dict) if config_dict else None
-
-        job.progress = 0.25
-        db.commit()
-
-        layer_names, provenance = run_terrain_pipeline(
-            job_id=job_id,
-            raw_dem_path=Path(raw_dem_path),
-            metadata=metadata,
-            storage_base=settings.storage_dir,
-            config=config,
-        )
-
-        job.progress = 0.95
-        db.commit()
-
-        job.status = JobStatus.DONE.value
-        job.progress = 1.0
-        job.output_layers_json = json.dumps(layer_names)
-        job.provenance_json = json.dumps(provenance)
-        job.explainable_breakdown_json = None
-        job.completed_at = datetime.now(timezone.utc)
-        db.commit()
-
+        
+        filepath = os.path.join(settings.STORAGE_DIR, "jobs", job_id, "input", "dem.tif")
+        job.input_hash = compute_hash(filepath)
+        
+        meta = inspect_dem(filepath)
+        job.crs = meta["crs"]
+        job.bounds = meta["bounds"]
+        job.resolution = meta["resolution"]
+        job.nodata = meta["nodata"]
+        job.width = meta["width"]
+        job.height = meta["height"]
+        job.min_elevation = meta["min_elevation"]
+        job.max_elevation = meta["max_elevation"]
+        job.progress = 100
+        job.status = "succeeded"
     except Exception as e:
-        job.status = JobStatus.FAILED.value
+        job.status = "failed"
         job.error = str(e)
-        job.progress = 0.0
-        db.commit()
     finally:
+        db.commit()
         db.close()

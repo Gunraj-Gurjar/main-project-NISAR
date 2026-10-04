@@ -119,6 +119,23 @@ export const NewProjectPage: React.FC = () => {
       const matrix = await processGeoTiff(file);
       setSelectedFile(file);
 
+      let minElev = Infinity;
+      let maxElev = -Infinity;
+      let sumElev = 0;
+      let count = 0;
+
+      for (let r = 0; r < matrix.length; r++) {
+        for (let c = 0; c < matrix[r].length; c++) {
+          const val = matrix[r][c];
+          if (isFinite(val)) {
+            if (val < minElev) minElev = val;
+            if (val > maxElev) maxElev = val;
+            sumElev += val;
+            count++;
+          }
+        }
+      }
+
       // Construct extracted DEM metadata
       const meta: DemMetadata = {
         crs: "EPSG:4326",
@@ -127,9 +144,9 @@ export const NewProjectPage: React.FC = () => {
         nodata: -9999,
         size: [matrix.length, matrix[0]?.length || 100],
         band_count: 1, // Single-band elevation raster validation
-        elevation_min: 0,
-        elevation_max: 850,
-        elevation_mean: 340,
+        elevation_min: isFinite(minElev) ? Math.round(minElev) : 0,
+        elevation_max: isFinite(maxElev) ? Math.round(maxElev) : 1000,
+        elevation_mean: count > 0 ? Math.round(sumElev / count) : 500,
       };
 
       setDemMetadata(meta);
@@ -187,6 +204,13 @@ export const NewProjectPage: React.FC = () => {
 
       if (selectedFile) {
         try {
+          terrainData = await processGeoTiff(selectedFile);
+        } catch (tiffErr) {
+          console.warn("Client GeoTIFF raster parsing error, falling back to generated grid:", tiffErr);
+          terrainData = generateDemoTerrain();
+        }
+
+        try {
           const createRes = await submitJob(selectedFile, {
             stream_threshold: data.streamThreshold,
             weights: {
@@ -197,10 +221,8 @@ export const NewProjectPage: React.FC = () => {
             },
           });
           jobResponse = await getJobStatus(createRes.job_id);
-          terrainData = await processGeoTiff(selectedFile);
         } catch (apiErr) {
           console.warn("Backend API call failed, using client demo processing:", apiErr);
-          terrainData = generateDemoTerrain();
           jobResponse = {
             job_id: `job-${Date.now().toString(36)}`,
             status: "done",
@@ -212,7 +234,7 @@ export const NewProjectPage: React.FC = () => {
               bounds: [-122.4194, 37.7749, -122.4094, 37.7849],
               resolution: [10, 10],
               nodata: -9999,
-              size: [100, 100],
+              size: [terrainData.length, terrainData[0]?.length || 100],
               band_count: 1,
               elevation_min: 0,
               elevation_max: 1000,

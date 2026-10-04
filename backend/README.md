@@ -1,110 +1,51 @@
-# Terrain Hazard Screening — Python Backend
+# Terrain Hazard Screening Backend
 
-FastAPI geoprocessing service for DEM upload, validation, and background terrain screening. Job state is stored in PostgreSQL (PostGIS image); raster artifacts live on a shared `/data` volume.
+This is the backend for the Terrain Hazard Screening tool.
 
-## Stack
-
-| Piece | Choice |
-| --- | --- |
-| API | FastAPI + Uvicorn |
-| Jobs | **FastAPI `BackgroundTasks`** (no Redis/RQ worker — simpler for a single-process dev stack) |
-| DB | SQLAlchemy + Alembic on PostGIS-enabled Postgres |
-| Geo | rasterio / GDAL (Docker image) |
-
-## Run with Docker Compose
-
-From this directory:
-
+## Setup
 ```bash
 docker compose up --build
 ```
+This will start the database and the backend service.
 
-Services:
-
-- **backend** — `http://localhost:8000` (OpenAPI at `/docs`)
-- **db** — Postgres 16 + PostGIS on `localhost:5432`
-- **local_data** — named volume mounted at `/data` in the backend container
-
-Environment (set in `docker-compose.yml`):
-
-- `DATABASE_URL=postgresql://terrain_user:terrain_secure_password@db:5432/terrain_db`
-- `STORAGE_DIR=/data`
-
-On startup the backend runs `alembic upgrade head`, then Uvicorn.
-
-## API
-
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Liveness |
-| `POST` | `/api/jobs` | Multipart: `file` (GeoTIFF) + optional `config` (JSON string) → `{ job_id, ... }` |
-| `GET` | `/api/jobs/{job_id}` | Status: `queued` / `running` / `done` / `failed`, progress, error, output layers |
-| `GET` | `/api/jobs/{job_id}/layers/{layer_name}` | COG (`.tif`) or GeoJSON |
-
-CORS is enabled for the Vite dev server (`http://localhost:5173`).
-
-### curl examples
-
-Health:
-
+## Running Migrations
+The backend service automatically runs `alembic upgrade head` on startup.
+To create a new migration:
 ```bash
-curl -s http://localhost:8000/api/health | jq
+docker compose exec backend alembic revision --autogenerate -m "description"
 ```
 
-Submit a DEM (optional analysis weights as JSON):
-
+## Running Tests
 ```bash
-curl -s -X POST http://localhost:8000/api/jobs \
-  -F "file=@/path/to/dem.tif;type=image/tiff" \
-  -F 'config={"relative_elevation_weight":0.4}' | jq
+docker compose run --rm backend pytest
 ```
 
-Poll job status:
-
+## Synthetic DEM
+To generate a synthetic DEM for testing:
 ```bash
-curl -s http://localhost:8000/api/jobs/job_abc123def456 | jq
+docker compose run --rm backend python scripts/make_synthetic_dem.py
 ```
 
-Download a result layer (when `status` is `done`):
+## API Examples
 
+Health check:
 ```bash
-curl -O -J http://localhost:8000/api/jobs/job_abc123def456/layers/susceptibility
+curl http://localhost:8000/api/health
 ```
 
-## Local development (without Docker)
-
+Upload DEM:
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-export DATABASE_URL=postgresql://terrain_user:terrain_secure_password@localhost:5432/terrain_db  # optional; falls back to SQLite
-uvicorn app.main:app --reload --port 8000
+curl -X POST http://localhost:8000/api/jobs -F "dem=@synthetic_dem.tif"
 ```
 
-## Tests
-
+Poll job:
 ```bash
-pip install -r requirements.txt
-pytest tests/test_health.py tests/test_upload_validation.py -v
+curl http://localhost:8000/api/jobs/job_xxxx
 ```
 
-Upload validation rejects non–single-band GeoTIFFs, missing CRS, and bad extensions; valid uploads return CRS, bounds, resolution, nodata, size, and min/max/mean elevation.
-
-## Layout
-
-```
-backend/
-├── app/
-│   ├── main.py              # FastAPI app, CORS, routers
-│   ├── api/                 # health, jobs routers
-│   ├── core/                # config, database
-│   ├── models/              # SQLAlchemy + Pydantic schemas
-│   ├── services/            # DEM validation, pipeline steps
-│   ├── storage/             # local /data abstraction
-│   └── workers/             # BackgroundTasks job runner
-├── alembic/                 # migrations (jobs, validations + PostGIS ext)
-├── tests/
-├── docker-compose.yml
-├── Dockerfile
-└── config.yaml
-```
+## Troubleshooting
+- **Port 5432 in use**: Stop local Postgres or change port mapping in docker-compose.yml.
+- **Docker daemon not running**: Start Docker Desktop.
+- **WSL2 not enabled**: Enable WSL2 in Docker Desktop settings.
+- **DB not ready**: The backend waits for the DB using a healthcheck, but if it fails, restart the compose stack.
+- **CORS errors**: Ensure `CORS_ORIGINS` in `.env` matches the Vite dev server URL.
