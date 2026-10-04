@@ -1,5 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense, useRef, useEffect } from "react";
-import { Layers, Mountain, Map as MapIcon, SlidersHorizontal, Crosshair, Radio, Info, Eye, EyeOff } from "lucide-react";
+import { Layers, Mountain, Map as MapIcon, SlidersHorizontal, Crosshair, Radio, Eye, EyeOff, Building } from "lucide-react";
 import { Map, Source, Layer } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { LegendBar } from "@/components/shared/LegendBar";
@@ -46,6 +46,7 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
   const [compareSwipeMode, setCompareSwipeMode] = useState(false);
   const [swipePos, setSwipePos] = useState(50); // percentage
   const [showLegend, setShowLegend] = useState(true);
+  const [show3dBuildings, setShow3dBuildings] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Generate 2D raster Image Data URL from terrainData
@@ -204,8 +205,16 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
         </div>
       </div>
 
-      {/* Canvas Top Right Action */}
-      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+        <Button
+          variant={show3dBuildings ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShow3dBuildings((prev) => !prev)}
+          className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
+        >
+          <Building className="h-3.5 w-3.5" />
+          <span>{show3dBuildings ? "3D Buildings: ON" : "3D Buildings: OFF"}</span>
+        </Button>
+
         <Button
           variant={compareSwipeMode ? "default" : "outline"}
           size="sm"

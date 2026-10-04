@@ -19,21 +19,48 @@ export async function processGeoTiff(file: File): Promise<number[][]> {
     gdalNoData = null;
   }
 
+  // Extract valid non-nodata values to calculate percentile statistics
+  const validValues: number[] = [];
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const val = Number(raster[i * width + j]);
+      if (
+        isFinite(val) &&
+        (gdalNoData === null || Math.abs(val - gdalNoData) > 1e-3) &&
+        val > 0 &&
+        val < 15000
+      ) {
+        validValues.push(val);
+      }
+    }
+  }
+
+  // Calculate 2nd & 98th percentile for contrast stretching
+  validValues.sort((a, b) => a - b);
+  const p2 = validValues.length ? validValues[Math.floor(validValues.length * 0.02)] : 0;
+  const p98 = validValues.length ? validValues[Math.floor(validValues.length * 0.98)] : 100;
+  const range = p98 - p2 || 1;
+  const avgValid = validValues.length ? validValues[Math.floor(validValues.length * 0.5)] : 10;
+
   // Convert to 2D array and clean invalid/nodata values
   const grid: number[][] = [];
   for (let i = 0; i < height; i++) {
     const row: number[] = [];
     for (let j = 0; j < width; j++) {
       let val = Number(raster[i * width + j]);
-      if (!isFinite(val) || (gdalNoData !== null && Math.abs(val - gdalNoData) < 1e-3) || val < -1000 || val > 12000) {
-        val = 0;
+      if (!isFinite(val) || (gdalNoData !== null && Math.abs(val - gdalNoData) < 1e-3) || val <= 0 || val > 15000) {
+        val = avgValid * 0.1; // Smooth background
+      }
+      // If raw satellite values are small (like 0-10), scale into visible 3D terrain range (0 - 150m)
+      if (p98 < 50) {
+        val = Math.max(0, ((val - p2) / range) * 150);
       }
       row.push(val);
     }
     grid.push(row);
   }
 
-  // Downsample to max 200x200
+  // Downsample to max 200x200 for smooth 3D rendering
   return downsample(grid, 200);
 }
 
