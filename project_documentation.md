@@ -37,3 +37,12 @@ This panel provides aggregate statistics and project-wide metadata.
 
 ### Top Navigation Header
 This bar provides context for where you are in the application. It includes breadcrumbs and navigation links allowing you to easily switch between the main workspace, uploading new data, viewing model validation metrics, or generating final exportable reports.
+
+## ADDENDUM: Illustrative Flood Simulation
+- The simulation is a SCENARIO DEMO on sample Himalayan terrain. It is not a real event, not a forecast, not
+  validated. Every simulation view must carry a persistent label: "Illustrative simulation on sample terrain.
+  Not a real event or a prediction."
+- Never use "prediction", "forecast", "early warning" or imply a real date/location/event.
+- Routing and inundation must be DERIVED from the DEM (flow direction, accumulation, HAND), not hand-drawn
+  polygons or random noise.
+- All speeds, stage values and decay rates are configurable and documented as illustrative defaults.

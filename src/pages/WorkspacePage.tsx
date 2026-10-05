@@ -127,9 +127,9 @@ export const WorkspacePage: React.FC = () => {
   const activeLayerObj = layers.find((l) => l.id === activeLayerId) || layers[0];
 
   return (
-    <div className="w-full flex-1 flex flex-col overflow-hidden">
+    <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
       {/* Sub-navigation Header */}
-      <ProjectNavHeader />
+      <ProjectNavHeader className="mb-0 shrink-0" />
 
       {/* Mobile Top Controls Bar */}
       <div className="md:hidden flex items-center justify-between p-2.5 bg-card border-b border-border text-xs">
@@ -209,25 +209,27 @@ export const WorkspacePage: React.FC = () => {
                     highlightedClass={highlightedClass}
                   />
 
-                  {/* Toggle Inspector Button */}
-                  <button
-                    type="button"
-                    onClick={() => setInspectorOpen((prev) => !prev)}
-                    aria-label={inspectorOpen ? "Hide Inspector Panel" : "Show Inspector Panel"}
-                    className="hidden md:flex items-center gap-1 absolute top-3 right-3 z-30 bg-card/90 backdrop-blur px-2.5 py-1.5 rounded-lg border border-border text-xs font-semibold shadow-md text-foreground hover:bg-card transition-colors"
-                  >
-                    {inspectorOpen ? (
-                      <>
-                        <PanelRightClose className="h-4 w-4 text-primary" />
-                        <span>Hide Inspector</span>
-                      </>
-                    ) : (
-                      <>
-                        <PanelRightOpen className="h-4 w-4 text-primary" />
-                        <span>Show Inspector</span>
-                      </>
-                    )}
-                  </button>
+                  {/* Toggle Inspector Button - only in 2D mode, in 3D mode it is docked cleanly on right edge */}
+                  {viewMode === "2d" && (
+                    <button
+                      type="button"
+                      onClick={() => setInspectorOpen((prev) => !prev)}
+                      aria-label={inspectorOpen ? "Hide Inspector Panel" : "Show Inspector Panel"}
+                      className="hidden md:flex items-center gap-1 absolute top-3 right-3 z-30 bg-card/90 backdrop-blur px-2.5 py-1.5 rounded-lg border border-border text-xs font-semibold shadow-md text-foreground hover:bg-card transition-colors"
+                    >
+                      {inspectorOpen ? (
+                        <>
+                          <PanelRightClose className="h-4 w-4 text-primary" />
+                          <span>Hide Inspector</span>
+                        </>
+                      ) : (
+                        <>
+                          <PanelRightOpen className="h-4 w-4 text-primary" />
+                          <span>Show Inspector</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </ResizablePanel>
 

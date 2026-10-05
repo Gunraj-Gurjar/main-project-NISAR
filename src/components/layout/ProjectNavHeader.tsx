@@ -5,7 +5,11 @@ import { cn } from "@/lib/utils";
 import { useProject } from "@/context/ProjectContext";
 import { StatusChip } from "@/components/shared/StatusChip";
 
-export const ProjectNavHeader: React.FC = () => {
+interface ProjectNavHeaderProps {
+  className?: string;
+}
+
+export const ProjectNavHeader: React.FC<ProjectNavHeaderProps> = ({ className }) => {
   const { id } = useParams<{ id: string }>();
   const { activeProject, getProjectById } = useProject();
 
@@ -40,7 +44,7 @@ export const ProjectNavHeader: React.FC = () => {
   ];
 
   return (
-    <div className="w-full bg-card border-b border-border py-3 px-4 md:px-6 mb-6">
+    <div className={cn("w-full bg-card border-b border-border py-3 px-4 md:px-6 mb-6", className)}>
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div>

@@ -157,62 +157,66 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
           </button>
         </div>
 
-        {/* Active Layer Label */}
-        <div className="bg-card/90 backdrop-blur px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground shadow-md flex items-center gap-2">
-          <Layers className="h-3.5 w-3.5 text-cyan-400" />
-          <span>Active Layer: <strong className="text-cyan-400 font-bold">{activeLayerName}</strong></span>
-        </div>
+        {/* Active Layer Label (2D mode only) */}
+        {viewMode === "2d" && (
+          <div className="bg-card/90 backdrop-blur px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground shadow-md flex items-center gap-2">
+            <Layers className="h-3.5 w-3.5 text-cyan-400" />
+            <span>Active Layer: <strong className="text-cyan-400 font-bold">{activeLayerName}</strong></span>
+          </div>
+        )}
       </div>
 
-      {/* Canvas Top Right Action */}
-      <div className="absolute top-3 right-3 z-20 flex items-center gap-2 flex-wrap">
-        {/* Opacity Control Slider */}
-        <div className="bg-card/90 backdrop-blur px-3 py-1 rounded-lg border border-border text-xs flex items-center gap-2 shadow-md">
-          <span className="text-[11px] text-muted-foreground font-semibold">Opacity:</span>
-          <input
-            type="range"
-            min={0.1}
-            max={1}
-            step={0.05}
-            value={layerOpacity}
-            onChange={(e) => setLayerOpacity(Number(e.target.value))}
-            className="w-16 accent-primary cursor-pointer"
-            title="Adjust Flood Layer Opacity"
-          />
-          <span className="text-[11px] font-mono text-foreground font-bold">{Math.round(layerOpacity * 100)}%</span>
+      {/* Canvas Top Right Action (2D Mode Only) */}
+      {viewMode === "2d" && (
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-2 flex-wrap">
+          {/* Opacity Control Slider */}
+          <div className="bg-card/90 backdrop-blur px-3 py-1 rounded-lg border border-border text-xs flex items-center gap-2 shadow-md">
+            <span className="text-[11px] text-muted-foreground font-semibold">Opacity:</span>
+            <input
+              type="range"
+              min={0.1}
+              max={1}
+              step={0.05}
+              value={layerOpacity}
+              onChange={(e) => setLayerOpacity(Number(e.target.value))}
+              className="w-16 accent-primary cursor-pointer"
+              title="Adjust Flood Layer Opacity"
+            />
+            <span className="text-[11px] font-mono text-foreground font-bold">{Math.round(layerOpacity * 100)}%</span>
+          </div>
+
+          <Button
+            variant={show3dBuildings ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShow3dBuildings((prev) => !prev)}
+            className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
+          >
+            <Building className="h-3.5 w-3.5" />
+            <span>{show3dBuildings ? "3D Buildings: ON" : "3D Buildings: OFF"}</span>
+          </Button>
+
+          <Button
+            variant={compareSwipeMode ? "default" : "outline"}
+            size="sm"
+            disabled={!hasValidationData}
+            onClick={() => setCompareSwipeMode((prev) => !prev)}
+            className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span>{compareSwipeMode ? "Disable Compare" : "Compare (Susceptibility vs SAR)"}</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLegend((prev) => !prev)}
+            className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
+          >
+            {showLegend ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            <span>{showLegend ? "Hide Legend" : "Show Legend"}</span>
+          </Button>
         </div>
-
-        <Button
-          variant={show3dBuildings ? "default" : "outline"}
-          size="sm"
-          onClick={() => setShow3dBuildings((prev) => !prev)}
-          className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
-        >
-          <Building className="h-3.5 w-3.5" />
-          <span>{show3dBuildings ? "3D Buildings: ON" : "3D Buildings: OFF"}</span>
-        </Button>
-
-        <Button
-          variant={compareSwipeMode ? "default" : "outline"}
-          size="sm"
-          disabled={!hasValidationData}
-          onClick={() => setCompareSwipeMode((prev) => !prev)}
-          className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-          <span>{compareSwipeMode ? "Disable Compare" : "Compare (Susceptibility vs SAR)"}</span>
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowLegend((prev) => !prev)}
-          className="h-8 text-xs gap-1.5 bg-card/90 backdrop-blur border-border shadow-md"
-        >
-          {showLegend ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          <span>{showLegend ? "Hide Legend" : "Show Legend"}</span>
-        </Button>
-      </div>
+      )}
 
       {/* Main Render Area */}
       <div className="w-full flex-1 relative min-h-0 overflow-hidden">
