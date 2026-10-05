@@ -205,6 +205,8 @@ export const WorkspaceCanvas: React.FC<WorkspaceCanvasProps> = ({
         </div>
       </div>
 
+      {/* Canvas Top Right Action */}
+      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
         <Button
           variant={show3dBuildings ? "default" : "outline"}
           size="sm"
