@@ -36,3 +36,24 @@ The frontend application was migrated from a legacy single-tab prototype (`Index
 1. **Static Morphological Screening**: Clarified on all pages that DEM geoprocessing computes static terrain susceptibility, NOT real-time flood forecasts, timing, or hydrodynamic inundation depth.
 2. **NISAR Radar Function**: NISAR L-band SAR observations provide physical water extent validation via backscatter thresholding; NISAR does **NOT** provide elevation data.
 3. **No Fake Alerts**: Advisory bulletins are labeled strictly for screening. No SMS/push alert simulations or fake evacuation commands.
+
+---
+
+## 5. Illustrative 3D Flood Simulation Engine & Terrain Susceptibility
+
+1. **Pure TypeScript Engine (`src/lib/flood-sim/`)**:
+   - Pit conditioning with depth guard (`maxPitFillDepth`).
+   - D8 flow direction and topological flow accumulation via Kahn's algorithm.
+   - HAND (Height Above Nearest Drainage) computation.
+   - Channel streamline routing with illustrative slope-dependent flow velocities.
+   - Stage hydrograph with distance decay and lateral inundation spreading.
+   - Low-memory sparse frame serialization (`Uint32Array` + `Float32Array`).
+2. **Static Terrain Susceptibility Layer**:
+   - Strictly designated as `"flood susceptibility (terrain-based)"` (never "hazard" or "prediction").
+   - Classifies terrain into 4 tiers (Low, Moderate, High, Very High) with click-to-explain factor contributions.
+3. **3D Visualization & Simulation Panel (`TerrainViewer.tsx` & `SimulationPanel.tsx`)**:
+   - Real-time translucent water layer surface ($z = z_{\text{terrain}} + \text{depth}$).
+   - Fast `Plotly.restyle` trace updates during playback (zero full-chart re-renders).
+   - Scenario presets (`Heavy rainfall flash flood` and `Upstream release`) with parametric sliders.
+   - Mandatory persistent canvas label and plot watermark: *"Illustrative simulation on sample terrain. Not a real event or a prediction."*
+   - See [`docs/SIMULATION.md`](file:///d:/Sami%20Drvie/Projects/main-project-nisar/docs/SIMULATION.md) for mathematical derivations and algorithm specifications.
